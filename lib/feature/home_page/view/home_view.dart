@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/app_colour.dart';
 import 'package:any_docs/feature/home_page/controller/home_controller.dart';
@@ -11,160 +9,205 @@ import 'package:get/get.dart';
 class HomePageView extends GetView<HomePageController> {
   const HomePageView({super.key});
 
+  static const _cardTextStyle = TextStyle(
+    fontWeight: FontWeight.w600,
+    fontSize: 16,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red[900],
-        title: const Center(
-          child: Text('Any Docs',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        elevation: 1,
+        centerTitle: true,
+        backgroundColor: Colors.red.shade900,
+        title: const Text(
+          'Any Docs',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
-            color: whiteColor,
-              onPressed: () {
-                exit(0);
-              },
-              icon: const Icon(Icons.exit_to_app_rounded))
+            color: Colors.white,
+            tooltip: 'Exit',
+            icon: const Icon(Icons.exit_to_app_rounded),
+            onPressed: _showExitDialog,
+          ),
         ],
       ),
-      body:  GridView(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Number of columns
-          crossAxisSpacing: 10.0, // Spacing between columns
-          mainAxisSpacing: 10.0, // Spacing between rows
-          childAspectRatio: 0.85, // Aspect ratio of each child (width / height)
-        ),
+      body: GridView.count(
+        padding: const EdgeInsets.all(16),
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: .90,
         children: [
-          InkWell(
-            onTap: () {
-              controller.onPdfButtonPressed();
-            },
-            child: Card(
-              elevation: 3,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(Icons.picture_as_pdf, size: 50,color: Colors.red[400]), // Example icon
-                  Text('Open pdf',style: TextStyle(color: Colors.red[400])), // Example text
-                ],
-              ),
-
-            ),
+          _HomeCard(
+            title: 'Open PDF',
+            icon: Icons.picture_as_pdf,
+            onTap: controller.onPdfButtonPressed,
           ),
-          InkWell(
+          _HomeCard(
+            title: 'Open DOCX',
+            icon: CupertinoIcons.doc_fill,
             onTap: () {
-              Get.snackbar("Hii Snow", "i will fix it after sometime",
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundGradient:
-                  LinearGradient(begin: Alignment.topCenter, colors: [
-                    Colors.red[500]!,
-                    Colors.red[400]!,
-                    Colors.red[300]!,
-                  ]));
+              _comingSoon();
 
               Get.toNamed(RouteConstant.docxViewerPage);
-              return;
             },
-            child: Card(
-              elevation: 3,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(CupertinoIcons.doc_fill,size: 50,color: Colors.red[400]), // Example icon
-                  Text('Open docx',style: TextStyle(color: Colors.red[400])), // Example text
-                ],
-              ),
-            ),
           ),
-          InkWell(
-            onTap: () {
-              Get.snackbar("Hii Snow", "i will fix it after sometime",
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundGradient:
-                  LinearGradient(begin: Alignment.topCenter, colors: [
-                    Colors.red[500]!,
-                    Colors.red[400]!,
-                    Colors.red[300]!,
-                  ]));
-            },
-            child: Card(
-              elevation: 3,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(FontAwesomeIcons.fileExcel, size: 50,color: Colors.red[400]), // Example icon
-                  Text('Open xls',style: TextStyle(color: Colors.red[400])), // Example text
-                ],
-              ),
-            ),
+          _HomeCard(
+            title: 'Open XLS',
+            icon: FontAwesomeIcons.fileExcel,
+            onTap: _comingSoon,
           ),
-          InkWell(
-            onTap: () {
-              Get.bottomSheet(
-                  backgroundColor: Colors.white,
-                  SizedBox(
-                    height: Get.height * 0.20,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        InkWell(
-                          child: Column(
-                            children: [
-                              Image.asset(
-                                'assets/camera.jpg',
-                                height: Get.height * 0.15,
-                                width: Get.width * 0.20,
-                              ),
-                              Text(
-                                'Camera',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: appColor),
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            controller.openGallery.value = false;
-                            controller.convertImageToPdf();
-                          },
-                        ),
-                        InkWell(
-                            child: Column(
-                              children: [
-                                Image.asset(
-                                  'assets/gallery.png',
-                                  height: Get.height * 0.15,
-                                  width: Get.width * 0.20,
-                                ),
-                                Text(
-                                  'Gallery',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: appColor),
-                                ),
-                              ],
-                            ),
-                            onTap: () {
-                              controller.openGallery.value = true;
-                              controller.convertImageToPdf();
+          _HomeCard(
+            title: 'Image to PDF',
+            icon: Icons.image,
+            onTap: _showImagePickerSheet,
+          ),
+        ],
+      ),
+    );
+  }
 
-                            }),
-                      ],
-                    ),
-                  ));
-            },
-            child: Card(
-              elevation: 3,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(Icons.image, size: 50,color: Colors.red[400]), // Example icon
-                  Text('Image to pdf',style: TextStyle(color: Colors.red[400])), // Example text
-                ],
+  void _comingSoon() {
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be improved in a future update.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red.shade400,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(12),
+    );
+  }
+
+  void _showImagePickerSheet() {
+    Get.bottomSheet(
+      backgroundColor: Colors.white,
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ImageOption(
+                image: 'assets/camera.jpg',
+                title: 'Camera',
+                onTap: () {
+                  Get.back();
+                  controller.openGallery.value = false;
+                  controller.convertImageToPdf();
+                },
               ),
+              _ImageOption(
+                image: 'assets/gallery.png',
+                title: 'Gallery',
+                onTap: () {
+                  Get.back();
+                  controller.openGallery.value = true;
+                  controller.convertImageToPdf();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showExitDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Exit'),
+        content: const Text('Do you want to close the application?'),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(Get.context!).maybePop(),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeCard extends StatelessWidget {
+  const _HomeCard({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Colors.red.shade400;
+
+    return Card(
+      elevation: 3,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 55,
+              color: color,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: HomePageView._cardTextStyle.copyWith(color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageOption extends StatelessWidget {
+  const _ImageOption({
+    required this.image,
+    required this.title,
+    required this.onTap,
+  });
+
+  final String image;
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            image,
+            height: 90,
+            width: 90,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style:  TextStyle(
+              color: appColor,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

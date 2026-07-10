@@ -1,3 +1,4 @@
+
 name: any_docs
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
@@ -37,8 +38,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.6
 #  document_viewer: ^0.0.1
-  permission_handler: ^10.4.5
-  file_picker: ^6.1.1
+  permission_handler: ^12.0.3
+  file_picker: ^11.0.2
   flutter_pdfview: ^1.3.1
   docx_to_text: ^1.0.1
   receive_sharing_intent: ^1.6.7
@@ -95,7 +96,7 @@ flutter:
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
-  # example:
+  # acer:
   # fonts:
   #   - family: Schyler
   #     fonts:
