@@ -68,6 +68,11 @@ class HomePageView extends GetView<HomePageController> {
             icon: Icons.image,
             onTap: _showImagePickerSheet,
           ),
+          /*_HomeCard(
+            title: 'PDF to Images',
+            icon: Icons.photo_library,
+            onTap: controller.convertPdfToImages,
+          ),*/
         ],
       ),
     );

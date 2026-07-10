@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
-
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
@@ -443,11 +443,87 @@ class HomePageController extends GetxController {
     }
   }
 
+
   Future<ui.Image> _loadImage(XFile file) async {
     Uint8List bytes = await file.readAsBytes();
     final ui.Codec codec = await ui.instantiateImageCodec(bytes);
     final ui.FrameInfo frameInfo = await codec.getNextFrame();
     return frameInfo.image;
+  }
+
+
+  Future<void> convertPdfToImages() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return;
+      }
+
+      final pdfPath = result.files.single.path!;
+
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+
+      final document = await pdfx.PdfDocument.openData(
+        File(pdfPath).readAsBytesSync(),
+      );
+
+
+      final directory = await getTemporaryDirectory();
+
+      final outputFolder = Directory(
+        '${directory.path}/pdf_images_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      if (!await outputFolder.exists()) {
+        await outputFolder.create(recursive: true);
+      }
+
+      for (int i = 1; i <= document.pagesCount; i++) {
+        final page = await document.getPage(i);
+
+        final pageImage = await page.render(
+          width: (page.width * 2),
+          height: (page.height * 2),
+        );
+
+        final file = File(
+          '${outputFolder.path}/page_$i.png',
+        );
+
+        await file.writeAsBytes(pageImage!.bytes);
+
+        await page.close();
+      }
+
+      await document.close();
+
+      Get.back();
+
+      Get.snackbar(
+        'Success',
+        'Images saved to\n${outputFolder.path}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   ///*************************************************************************************************//////////
