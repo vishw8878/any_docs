@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:open_file/open_file.dart' as open_file;
-import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:pdf/pdf.dart' as pdf_plugin;
-import 'package:pdf/widgets.dart' as pw;
+
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
@@ -14,13 +10,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:open_file/open_file.dart' as open_file;
+import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:pdf/pdf.dart' as pdf_plugin;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class HomePageController extends GetxController {
-  
   final _sharedFiles = <SharedMediaFile>[];
   RxBool isPasswordProtected = false.obs;
   RxBool openGallery = false.obs;
@@ -56,10 +55,8 @@ class HomePageController extends GetxController {
   }
 
   Future<void> _initializeShareIntent() async {
-    _shareSubscription = ReceiveSharingIntent.instance
-        .getMediaStream()
-        .listen(
-          (files) async {
+    _shareSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (files) async {
         debugPrint('Share intent received');
         await _handleSharedFiles(files, fromInitialLaunch: false);
       },
@@ -68,9 +65,7 @@ class HomePageController extends GetxController {
       },
     );
 
-    final initialFiles =
-    await ReceiveSharingIntent.instance.getInitialMedia();
-
+    final initialFiles = await ReceiveSharingIntent.instance.getInitialMedia();
 
     if (initialFiles.isNotEmpty) {
       debugPrint('Share intent received (terminated)');
@@ -82,9 +77,9 @@ class HomePageController extends GetxController {
   }
 
   Future<void> _handleSharedFiles(
-      List<SharedMediaFile> files, {
-        required bool fromInitialLaunch,
-      }) async {
+    List<SharedMediaFile> files, {
+    required bool fromInitialLaunch,
+  }) async {
     await ReceiveSharingIntent.instance.reset();
     if (files.isEmpty) return;
 
@@ -103,7 +98,7 @@ class HomePageController extends GetxController {
       return;
     }
 
-    final protected = await isPdgProtected(sharedFile.path);
+    final protected = await isPdfProtected(sharedFile.path);
 
     if (!protected) {
       _openPdf(sharedFile.path);
@@ -140,7 +135,7 @@ class HomePageController extends GetxController {
       final file = File(result.files.single.path!);
       final fileName = result.files.single.name;
 
-      final isProtected = await isPdgProtected(file.path);
+      final isProtected = await isPdfProtected(file.path);
 
       if (!isProtected) {
         _openPdf(file.path);
@@ -162,6 +157,7 @@ class HomePageController extends GetxController {
       );
     }
   }
+
   Future<void> _showPasswordDialog({
     required String pdfPath,
     required String fileName,
@@ -200,11 +196,12 @@ class HomePageController extends GetxController {
       ),
     );
   }
+
   Future<void> _unlockPdf(
-      String pdfPath,
-      String fileName,
-      String password,
-      ) async {
+    String pdfPath,
+    String fileName,
+    String password,
+  ) async {
     try {
       Get.dialog(
         const Center(
@@ -247,6 +244,7 @@ class HomePageController extends GetxController {
       );
     }
   }
+
   Future<void> convertImageToPdf() async {
     final picker = ImagePicker();
     final pdf = pw.Document();
@@ -291,13 +289,15 @@ class HomePageController extends GetxController {
         pdf.addPage(
           pw.Page(
             pageFormat: pdf_plugin.PdfPageFormat.a4,
-            margin: const pw.EdgeInsets.all(2),
-            build: (_) {
-              return pw.Center(
+            margin: const pw.EdgeInsets.all(10),
+            build: (context) {
+              return pw.Container(
+                width: double.infinity,
+                height: double.infinity,
+                alignment: pw.Alignment.center,
                 child: pw.Image(
                   pw.MemoryImage(bytes),
-                  width: dimension.width.toDouble(),
-                  height: dimension.height.toDouble(),
+                  fit: pw.BoxFit.contain,
                 ),
               );
             },
@@ -309,8 +309,7 @@ class HomePageController extends GetxController {
 
       final directory = await getTemporaryDirectory();
 
-      final fileName =
-          '${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.pdf';
 
       final file = File(
         '${directory.path}/$fileName',
@@ -337,11 +336,10 @@ class HomePageController extends GetxController {
     }
   }
 
-
   Future<void> saveAndLaunchFile(
-      List<int> bytes,
-      String fileName,
-      ) async {
+    List<int> bytes,
+    String fileName,
+  ) async {
     try {
       final Directory directory;
 
@@ -352,7 +350,7 @@ class HomePageController extends GetxController {
         directory = await path_provider.getApplicationSupportDirectory();
       } else {
         final path =
-        await PathProviderPlatform.instance.getApplicationSupportPath();
+            await PathProviderPlatform.instance.getApplicationSupportPath();
 
         directory = Directory(path!);
       }
@@ -417,24 +415,31 @@ class HomePageController extends GetxController {
     }
   }
 
-  Future<bool> isPdgProtected(path) async {
-    bool isEncrypted(List<int> bytes) {
-      final signature = bytes.sublist(0, 8);
-      final String hexSignature =
-      signature.map((b) => b.toRadixString(16).padLeft(2, '0')).join('');
-      log('hexSignature.toUpperCase()');
-      log('hex string: ${hexSignature.toUpperCase()}');
-      return hexSignature.toUpperCase() ==
-          '255044462D312E34';
-    }
+  Future<bool> isPdfProtected(String path) async {
+    try {
+      final bytes = await File(path).readAsBytes();
 
-    File file = File(path);
-    List<int> bytes = await file.readAsBytes();
+      final document = PdfDocument(
+        inputBytes: bytes,
+      );
 
-    if (isEncrypted(bytes)) {
-      return true;
-    } else {
+      document.dispose();
+
       return false;
+    } catch (e) {
+      debugPrint(e.toString());
+
+      // Check if the exception is due to password protection
+      final error = e.toString().toLowerCase();
+
+      if (error.contains('password') ||
+          error.contains('encrypted') ||
+          error.contains('security')) {
+        return true;
+      }
+
+      // Some other error (corrupt PDF, invalid file, etc.)
+      rethrow;
     }
   }
 
@@ -445,10 +450,5 @@ class HomePageController extends GetxController {
     return frameInfo.image;
   }
 
-
-
   ///*************************************************************************************************//////////
-
-
-
 }
