@@ -11,7 +11,9 @@ List<GetPage> getPages = [
   GetPage(
       name: RouteConstant.homePage,
       page: () => HomePageView(),
-      binding: HomePageBinding()),
+      binding: HomePageBinding(),
+    // preventDuplicates: false
+  ),
   GetPage(
       name: RouteConstant.pdfViewerPage,
       page: () => PdfViewerPage(),

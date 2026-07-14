@@ -10,6 +10,10 @@ class PdfViewerPage extends GetView<PdfViewerController> {
 
   @override
   Widget build(BuildContext context) {
+    final title = controller.fileName.length > 18
+        ? '${controller.fileName.substring(0, 18)}...'
+        : controller.fileName;
+
     return Material(
         child: WillPopScope(
             onWillPop: () async {
@@ -27,7 +31,7 @@ class PdfViewerPage extends GetView<PdfViewerController> {
                     )),
                 backgroundColor: Colors.red[900],
                 title: Text(
-                  '${controller.fileName.substring(0, 5)}...',
+                  title,
                   style: TextStyle(
                       fontWeight: FontWeight.normal, color: whiteColor),
                 ),
@@ -47,8 +51,7 @@ class PdfViewerPage extends GetView<PdfViewerController> {
                     ),
                     tooltip: 'Download',
                     onPressed: () async {
-                      print("on press hit");
-                      if (controller.filePath != null) {
+                      if (controller.filePath.isNotEmpty) {
                         await Share.shareXFiles(
                           [XFile(controller.filePath)],
                           sharePositionOrigin: Rect.fromCircle(
@@ -56,7 +59,7 @@ class PdfViewerPage extends GetView<PdfViewerController> {
                             center: const Offset(0, 0),
                           ),
                         );
-                      } else {}
+                      }
                     },
                   ),
                 ],
@@ -68,22 +71,19 @@ class PdfViewerPage extends GetView<PdfViewerController> {
                 swipeHorizontal: false,
                 autoSpacing: false,
                 pageFling: false,
-                onRender: (_pages) {
-                  print("_pages.toString()");
-                  print(_pages.toString());
-                  controller.totalPages.value = _pages.toString();
+                onRender: (pages) {
+                  controller.totalPages.value = (pages ?? 0).toString();
                 },
                 onError: (error) {
-                  print(error.toString());
+                  debugPrint(error.toString());
                 },
                 onPageError: (page, error) {
-                  print('$page: ${error.toString()}');
+                  debugPrint('$page: ${error.toString()}');
                 },
                 onViewCreated: (PDFViewController pdfViewController) {},
                 onPageChanged: (int? page, int? total) {
                   if (page != null && total != null) {
-                    print('page change: ${page++}/$total');
-                    controller.currentPage.value = page++;
+                    controller.currentPage.value = page + 1;
                   } else {
                     controller.currentPage.value = 0;
                   }

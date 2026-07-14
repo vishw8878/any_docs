@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' as ui;
-import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:pdf/pdf.dart' as pdf_plugin;
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
@@ -57,10 +55,11 @@ class HomePageController extends GetxController {
   Future<void> _initializeShareIntent() async {
     _shareSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
       (files) async {
-        debugPrint('Share intent received');
-        await _handleSharedFiles(files, fromInitialLaunch: false);
+        debugPrint('PDF intent received');
+        await _handleSharedFiles(files);
       },
       onError: (error) {
+        debugPrint('PDF intent error');
         debugPrint(error.toString());
       },
     );
@@ -68,19 +67,14 @@ class HomePageController extends GetxController {
     final initialFiles = await ReceiveSharingIntent.instance.getInitialMedia();
 
     if (initialFiles.isNotEmpty) {
-      debugPrint('Share intent received (terminated)');
-      await _handleSharedFiles(
-        initialFiles,
-        fromInitialLaunch: true,
-      );
+      debugPrint('PDF intent received on launch');
+      await _handleSharedFiles(initialFiles);
     }
+
+    await ReceiveSharingIntent.instance.reset();
   }
 
-  Future<void> _handleSharedFiles(
-    List<SharedMediaFile> files, {
-    required bool fromInitialLaunch,
-  }) async {
-    await ReceiveSharingIntent.instance.reset();
+  Future<void> _handleSharedFiles(List<SharedMediaFile> files) async {
     if (files.isEmpty) return;
 
     _sharedFiles
@@ -93,11 +87,6 @@ class HomePageController extends GetxController {
       return;
     }
 
-    if (!fromInitialLaunch) {
-      _openPdf(sharedFile.path);
-      return;
-    }
-
     final protected = await isPdfProtected(sharedFile.path);
 
     if (!protected) {
@@ -107,7 +96,7 @@ class HomePageController extends GetxController {
 
     _showPasswordDialog(
       pdfPath: sharedFile.path,
-      fileName: sharedFile.path.split('/').last,
+      fileName: _fileNameFromPath(sharedFile.path),
     );
   }
 
@@ -116,9 +105,16 @@ class HomePageController extends GetxController {
       RouteConstant.pdfViewerPage,
       arguments: [
         path,
-        path.split('/').last,
+        _fileNameFromPath(path),
       ],
     );
+  }
+
+  String _fileNameFromPath(String path) {
+    final normalizedPath = path.replaceAll('\\', '/');
+    final fileName = normalizedPath.split('/').last;
+
+    return fileName.isEmpty ? 'Document.pdf' : Uri.decodeComponent(fileName);
   }
 
   Future<void> onPdfButtonPressed() async {
@@ -235,12 +231,12 @@ class HomePageController extends GetxController {
 
       _openPdf(outputFile.path);
     } catch (e) {
-      Get.back();
+      // Get.back();
 
       Get.snackbar(
         'Invalid Password',
         'Please enter the correct password.',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -284,7 +280,6 @@ class HomePageController extends GetxController {
 
       for (final image in images) {
         final bytes = await image.readAsBytes();
-        final dimension = await _loadImage(image);
 
         pdf.addPage(
           pw.Page(
@@ -443,15 +438,6 @@ class HomePageController extends GetxController {
     }
   }
 
-
-  Future<ui.Image> _loadImage(XFile file) async {
-    Uint8List bytes = await file.readAsBytes();
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-    return frameInfo.image;
-  }
-
-
   Future<void> convertPdfToImages() async {
     try {
       final result = await FilePicker.pickFiles(
@@ -475,7 +461,6 @@ class HomePageController extends GetxController {
       final document = await pdfx.PdfDocument.openData(
         File(pdfPath).readAsBytesSync(),
       );
-
 
       final directory = await getTemporaryDirectory();
 

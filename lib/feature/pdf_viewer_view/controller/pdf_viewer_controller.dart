@@ -13,8 +13,10 @@ class PdfViewerController extends GetxController {
   @override
   void onInit() {
     arguments = Get.arguments;
-    filePath = arguments[0];
-    fileName = arguments[1];
+    if (arguments is List && arguments.length >= 2) {
+      filePath = arguments[0] as String;
+      fileName = arguments[1] as String;
+    }
     super.onInit();
   }
 }
