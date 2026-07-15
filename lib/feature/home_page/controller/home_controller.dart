@@ -4,7 +4,9 @@ import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_file/open_file.dart' as open_file;
@@ -18,6 +20,9 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class HomePageController extends GetxController {
+  static const MethodChannel _shareChannel =
+      MethodChannel('any_docs/share_intent');
+
   final _sharedFiles = <SharedMediaFile>[];
   RxBool isPasswordProtected = false.obs;
   RxBool openGallery = false.obs;
@@ -83,31 +88,100 @@ class HomePageController extends GetxController {
 
     final sharedFile = _sharedFiles.first;
 
-    if (!sharedFile.path.toLowerCase().endsWith('.pdf')) {
-      return;
+    try {
+      final resolvedPath = await _resolveSharedPath(sharedFile.path);
+      final looksLikePdf = _looksLikePdfPath(sharedFile.path) ||
+          _looksLikePdfPath(resolvedPath);
+
+      if (!looksLikePdf) {
+        debugPrint('Shared file is not a PDF: ${sharedFile.path}');
+        return;
+      }
+
+      final protected = await isPdfProtected(resolvedPath);
+
+      if (!protected) {
+        _openPdf(resolvedPath);
+        return;
+      }
+
+      _showPasswordDialog(
+        pdfPath: resolvedPath,
+        fileName: _fileNameFromPath(resolvedPath),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Shared PDF Error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      Get.snackbar(
+        'Error',
+        'Unable to open shared PDF.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<String> _resolveSharedPath(String path) async {
+    if (path.startsWith('content://')) {
+      try {
+        final resolved = await _shareChannel.invokeMethod<String>(
+          'resolveContentUri',
+          {'uri': path},
+        );
+
+        if (resolved != null && resolved.isNotEmpty) {
+          return resolved;
+        }
+      } catch (e, stackTrace) {
+        debugPrint('Resolve shared URI error: $e');
+        debugPrintStack(stackTrace: stackTrace);
+      }
     }
 
-    final protected = await isPdfProtected(sharedFile.path);
-
-    if (!protected) {
-      _openPdf(sharedFile.path);
-      return;
+    if (path.startsWith('file://')) {
+      return Uri.parse(path).toFilePath();
     }
 
-    _showPasswordDialog(
-      pdfPath: sharedFile.path,
-      fileName: _fileNameFromPath(sharedFile.path),
-    );
+    return path;
+  }
+
+  bool _looksLikePdfPath(String path) {
+    final normalized = path.toLowerCase();
+
+    return normalized.endsWith('.pdf') ||
+        normalized.contains('.pdf?') ||
+        normalized.contains('.pdf#');
   }
 
   void _openPdf(String path) {
-    Get.toNamed(
-      RouteConstant.pdfViewerPage,
-      arguments: [
-        path,
-        _fileNameFromPath(path),
-      ],
-    );
+    final arguments = [
+      path,
+      _fileNameFromPath(path),
+    ];
+
+    void openViewer() {
+      if (Get.currentRoute == RouteConstant.pdfViewerPage) {
+        Get.offNamed(
+          RouteConstant.pdfViewerPage,
+          arguments: arguments,
+        );
+        return;
+      }
+
+      Get.toNamed(
+        RouteConstant.pdfViewerPage,
+        arguments: arguments,
+      );
+    }
+
+    if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      openViewer();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      openViewer();
+    });
   }
 
   String _fileNameFromPath(String path) {
