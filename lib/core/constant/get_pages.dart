@@ -5,6 +5,8 @@ import 'package:any_docs/feature/home_page/binding/home_binding.dart';
 import 'package:any_docs/feature/home_page/view/home_view.dart';
 import 'package:any_docs/feature/pdf_viewer_view/binding/pdf_viewer_binding.dart';
 import 'package:any_docs/feature/pdf_viewer_view/view/pdf_viewer_view.dart';
+import 'package:any_docs/feature/xls_viewer/binding/xls_viewer_binding.dart';
+import 'package:any_docs/feature/xls_viewer/view/xls_viewer_view.dart';
 import 'package:get/get.dart';
 
 List<GetPage> getPages = [
@@ -22,4 +24,8 @@ List<GetPage> getPages = [
       name: RouteConstant.docxViewerPage,
       page: () => DocxViewerView(),
       binding: DocxViewerBinding()),
+  GetPage(
+      name: RouteConstant.xlsViewerPage,
+      page: () => XlsViewerView(),
+      binding: XlsViewerBinding()),
 ];

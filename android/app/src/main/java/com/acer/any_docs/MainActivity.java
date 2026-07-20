@@ -60,12 +60,42 @@ public class MainActivity extends FlutterActivity {
 
         String displayName = queryDisplayName(uri);
         if (displayName == null || displayName.isEmpty()) {
-            displayName = "shared_document.pdf";
-        } else if (!displayName.toLowerCase().endsWith(".pdf")) {
-            displayName = displayName + ".pdf";
+            displayName = "shared_document";
+            String mimeType = getContentResolver().getType(uri);
+            if (mimeType != null) {
+                if (mimeType.contains("word") || mimeType.contains("msword") || mimeType.contains("officedocument.wordprocessingml")) {
+                    displayName += ".docx";
+                } else if (mimeType.contains("excel") || mimeType.contains("spreadsheet") || mimeType.contains("vnd.ms-excel")) {
+                    displayName += ".xlsx";
+                } else {
+                    displayName += ".pdf";
+                }
+            } else {
+                displayName += ".pdf";
+            }
+        } else {
+            String lowerName = displayName.toLowerCase();
+            if (!lowerName.endsWith(".pdf") && 
+                !lowerName.endsWith(".docx") && 
+                !lowerName.endsWith(".doc") && 
+                !lowerName.endsWith(".xls") && 
+                !lowerName.endsWith(".xlsx")) {
+                String mimeType = getContentResolver().getType(uri);
+                if (mimeType != null) {
+                    if (mimeType.contains("word") || mimeType.contains("msword") || mimeType.contains("officedocument.wordprocessingml")) {
+                        displayName += ".docx";
+                    } else if (mimeType.contains("excel") || mimeType.contains("spreadsheet") || mimeType.contains("vnd.ms-excel")) {
+                        displayName += ".xlsx";
+                    } else {
+                        displayName += ".pdf";
+                    }
+                } else {
+                    displayName += ".pdf";
+                }
+            }
         }
 
-        File outputDir = new File(getCacheDir(), "shared_pdfs");
+        File outputDir = new File(getCacheDir(), "shared_documents");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }

@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_file/open_file.dart' as open_file;
@@ -60,11 +61,11 @@ class HomePageController extends GetxController {
   Future<void> _initializeShareIntent() async {
     _shareSubscription = ReceiveSharingIntent.instance.getMediaStream().listen(
       (files) async {
-        debugPrint('PDF intent received');
+        debugPrint('File intent received');
         await _handleSharedFiles(files);
       },
       onError: (error) {
-        debugPrint('PDF intent error');
+        debugPrint('File intent error');
         debugPrint(error.toString());
       },
     );
@@ -72,7 +73,7 @@ class HomePageController extends GetxController {
     final initialFiles = await ReceiveSharingIntent.instance.getInitialMedia();
 
     if (initialFiles.isNotEmpty) {
-      debugPrint('PDF intent received on launch');
+      debugPrint('File intent received on launch');
       await _handleSharedFiles(initialFiles);
     }
 
@@ -90,32 +91,45 @@ class HomePageController extends GetxController {
 
     try {
       final resolvedPath = await _resolveSharedPath(sharedFile.path);
-      final looksLikePdf = _looksLikePdfPath(sharedFile.path) ||
-          _looksLikePdfPath(resolvedPath);
+      
+      if (_looksLikePdfPath(sharedFile.path) || _looksLikePdfPath(resolvedPath)) {
+        final protected = await isPdfProtected(resolvedPath);
 
-      if (!looksLikePdf) {
-        debugPrint('Shared file is not a PDF: ${sharedFile.path}');
+        if (!protected) {
+          _openPdf(resolvedPath);
+          return;
+        }
+
+        _showPasswordDialog(
+          pdfPath: resolvedPath,
+          fileName: _fileNameFromPath(resolvedPath),
+        );
         return;
       }
 
-      final protected = await isPdfProtected(resolvedPath);
-
-      if (!protected) {
-        _openPdf(resolvedPath);
+      if (_looksLikeDocxPath(sharedFile.path) || _looksLikeDocxPath(resolvedPath)) {
+        _openDocx(resolvedPath, _fileNameFromPath(resolvedPath));
         return;
       }
 
-      _showPasswordDialog(
-        pdfPath: resolvedPath,
-        fileName: _fileNameFromPath(resolvedPath),
+      if (_looksLikeXlsPath(sharedFile.path) || _looksLikeXlsPath(resolvedPath)) {
+        _openXls(resolvedPath, _fileNameFromPath(resolvedPath));
+        return;
+      }
+
+      debugPrint('Unsupported shared file type: ${sharedFile.path}');
+      Get.snackbar(
+        'Unsupported File',
+        'This file format is not supported.',
+        snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, stackTrace) {
-      debugPrint('Shared PDF Error: $e');
+      debugPrint('Shared File Error: $e');
       debugPrintStack(stackTrace: stackTrace);
 
       Get.snackbar(
         'Error',
-        'Unable to open shared PDF.',
+        'Unable to open shared file.',
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -153,6 +167,28 @@ class HomePageController extends GetxController {
         normalized.contains('.pdf#');
   }
 
+  bool _looksLikeDocxPath(String path) {
+    final normalized = path.toLowerCase();
+
+    return normalized.endsWith('.docx') ||
+        normalized.endsWith('.doc') ||
+        normalized.contains('.docx?') ||
+        normalized.contains('.doc?') ||
+        normalized.contains('.docx#') ||
+        normalized.contains('.doc#');
+  }
+
+  bool _looksLikeXlsPath(String path) {
+    final normalized = path.toLowerCase();
+
+    return normalized.endsWith('.xlsx') ||
+        normalized.endsWith('.xls') ||
+        normalized.contains('.xlsx?') ||
+        normalized.contains('.xls?') ||
+        normalized.contains('.xlsx#') ||
+        normalized.contains('.xls#');
+  }
+
   void _openPdf(String path) {
     final arguments = [
       path,
@@ -184,11 +220,81 @@ class HomePageController extends GetxController {
     });
   }
 
+  void _openDocx(String path, String fileName) {
+    final arguments = [
+      path,
+      fileName,
+    ];
+
+    void openViewer() {
+      if (Get.currentRoute == RouteConstant.docxViewerPage) {
+        Get.offNamed(
+          RouteConstant.docxViewerPage,
+          arguments: arguments,
+        );
+        return;
+      }
+
+      Get.toNamed(
+        RouteConstant.docxViewerPage,
+        arguments: arguments,
+      );
+    }
+
+    if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      openViewer();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      openViewer();
+    });
+  }
+
+  void _openXls(String path, String fileName) {
+    final arguments = [
+      path,
+      fileName,
+    ];
+
+    void openViewer() {
+      if (Get.currentRoute == RouteConstant.xlsViewerPage) {
+        Get.offNamed(
+          RouteConstant.xlsViewerPage,
+          arguments: arguments,
+        );
+        return;
+      }
+
+      Get.toNamed(
+        RouteConstant.xlsViewerPage,
+        arguments: arguments,
+      );
+    }
+
+    if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      openViewer();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      openViewer();
+    });
+  }
+
   String _fileNameFromPath(String path) {
     final normalizedPath = path.replaceAll('\\', '/');
     final fileName = normalizedPath.split('/').last;
 
-    return fileName.isEmpty ? 'Document.pdf' : Uri.decodeComponent(fileName);
+    if (fileName.isEmpty) {
+      if (_looksLikeDocxPath(path)) {
+        return 'Document.docx';
+      } else if (_looksLikeXlsPath(path)) {
+        return 'Document.xlsx';
+      }
+      return 'Document.pdf';
+    }
+    return Uri.decodeComponent(fileName);
   }
 
   Future<void> onPdfButtonPressed() async {
@@ -223,6 +329,60 @@ class HomePageController extends GetxController {
       Get.snackbar(
         'Error',
         'Unable to open PDF.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> onDocxButtonPressed() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['docx', 'doc'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return;
+      }
+
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+
+      _openDocx(file.path, fileName);
+    } catch (e, stackTrace) {
+      debugPrint('DOCX Picker Error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      Get.snackbar(
+        'Error',
+        'Unable to open DOCX.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> onXlsButtonPressed() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xls', 'xlsx'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return;
+      }
+
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+
+      _openXls(file.path, fileName);
+    } catch (e, stackTrace) {
+      debugPrint('XLS Picker Error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      Get.snackbar(
+        'Error',
+        'Unable to open XLS.',
         snackPosition: SnackPosition.BOTTOM,
       );
     }

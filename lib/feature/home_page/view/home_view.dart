@@ -20,7 +20,7 @@ class HomePageView extends GetView<HomePageController> {
       appBar: AppBar(
         elevation: 1,
         centerTitle: true,
-        backgroundColor: Colors.red.shade900,
+        backgroundColor: appColor,
         title: const Text(
           'Any Docs',
           style: TextStyle(
@@ -52,16 +52,12 @@ class HomePageView extends GetView<HomePageController> {
           _HomeCard(
             title: 'Open DOCX',
             icon: CupertinoIcons.doc_fill,
-            onTap: () {
-              _comingSoon();
-
-              Get.toNamed(RouteConstant.docxViewerPage);
-            },
+            onTap: controller.onDocxButtonPressed,
           ),
           _HomeCard(
             title: 'Open XLS',
             icon: FontAwesomeIcons.fileExcel,
-            onTap: _comingSoon,
+            onTap: controller.onXlsButtonPressed,
           ),
           _HomeCard(
             title: 'Image to PDF',
@@ -83,7 +79,7 @@ class HomePageView extends GetView<HomePageController> {
       'Coming Soon',
       'This feature will be improved in a future update.',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.shade400,
+      backgroundColor: appColor,
       colorText: Colors.white,
       margin: const EdgeInsets.all(12),
     );
@@ -156,7 +152,7 @@ class _HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Colors.red.shade400;
+     final color = appColor;
 
     return Card(
       elevation: 3,
