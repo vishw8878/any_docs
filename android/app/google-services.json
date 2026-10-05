@@ -1,0 +1,118 @@
+{
+  "project_info": {
+    "project_number": "446762021954",
+    "project_id": "demosep",
+    "storage_bucket": "demosep.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446762021954:android:c6df78c039092e07aba9db",
+        "android_client_info": {
+          "package_name": "com.acer.any_docs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvKJN00Z_OYhpZsSDfO1sKyHVxnhGFofw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446762021954-0s1i37svgf6rg1to6d3aqb1cquuneofd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.acer.vmsFirst"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446762021954:android:caa04488d137c314aba9db",
+        "android_client_info": {
+          "package_name": "com.acer.vms_first"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvKJN00Z_OYhpZsSDfO1sKyHVxnhGFofw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446762021954-0s1i37svgf6rg1to6d3aqb1cquuneofd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.acer.vmsFirst"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446762021954:android:410d9b9e63286966aba9db",
+        "android_client_info": {
+          "package_name": "com.example.demo_sep"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvKJN00Z_OYhpZsSDfO1sKyHVxnhGFofw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "446762021954-c650v706h83a9k9237mlsicsd6qtsind.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "446762021954-0s1i37svgf6rg1to6d3aqb1cquuneofd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.acer.vmsFirst"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

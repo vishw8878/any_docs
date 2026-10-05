@@ -27,7 +27,7 @@ android {
         applicationId "com.acer.any_docs"
         minSdk 24
         targetSdk 36
-        versionCode 10004
+        versionCode 10006
         versionName "1.0.0"
         multiDexEnabled true
     }

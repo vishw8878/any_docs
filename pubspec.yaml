@@ -57,6 +57,9 @@ dependencies:
   excel: ^4.0.6
   archive: ^3.6.1
   xml: ^6.5.0
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.6.1
+  cloud_firestore: ^6.3.0
 #  pdf_render: ^1.4.12
 
 dev_dependencies:

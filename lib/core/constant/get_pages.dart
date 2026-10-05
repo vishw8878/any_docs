@@ -9,6 +9,11 @@ import 'package:any_docs/feature/xls_viewer/binding/xls_viewer_binding.dart';
 import 'package:any_docs/feature/xls_viewer/view/xls_viewer_view.dart';
 import 'package:get/get.dart';
 
+import '../../feature/login/login_binding.dart';
+import '../../feature/login/login_view.dart';
+import '../../feature/sign_up/sign_up_binding.dart';
+import '../../feature/sign_up/sign_up_view.dart';
+
 List<GetPage> getPages = [
   GetPage(
       name: RouteConstant.homePage,
@@ -28,4 +33,16 @@ List<GetPage> getPages = [
       name: RouteConstant.xlsViewerPage,
       page: () => XlsViewerView(),
       binding: XlsViewerBinding()),
+
+      GetPage(
+        name: RouteConstant.LOGIN,
+        page: () => const LoginView(),
+        binding: LoginBinding(),
+      ),
+
+      GetPage(
+        name: RouteConstant.SIGN_UP,
+        page: () => const SignUpView(),
+        binding: SignUpBinding(),
+      ),
 ];
