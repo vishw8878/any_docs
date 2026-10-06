@@ -3,7 +3,6 @@ import 'package:any_docs/core/utils/app_colour.dart';
 import 'package:any_docs/feature/home_page/controller/home_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class HomePageView extends GetView<HomePageController> {
@@ -56,7 +55,7 @@ class HomePageView extends GetView<HomePageController> {
           ),
           _HomeCard(
             title: 'Open XLS',
-            icon: FontAwesomeIcons.fileExcel,
+            icon: Icons.table_chart_rounded,
             onTap: controller.onXlsButtonPressed,
           ),
           _HomeCard(
@@ -152,7 +151,7 @@ class _HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     final color = appColor;
+    final color = appColor;
 
     return Card(
       elevation: 3,
@@ -206,7 +205,7 @@ class _ImageOption extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style:  TextStyle(
+            style: TextStyle(
               color: appColor,
               fontWeight: FontWeight.bold,
             ),

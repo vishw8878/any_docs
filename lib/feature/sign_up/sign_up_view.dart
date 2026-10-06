@@ -1,3 +1,4 @@
+import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/app_colour.dart';
 import 'package:any_docs/feature/sign_up/sign_up_controller.dart';
 // import 'package:any_docs/feature/auth/controller/sign_up_controller.dart';
@@ -203,7 +204,7 @@ class SignUpView extends GetView<SignUpController> {
                       children: [
                         const Text('Already have an account?'),
                         TextButton(
-                          onPressed: Get.back,
+                          onPressed: () => Get.offNamed(RouteConstant.LOGIN),
                           child: Text(
                             'Login',
                             style: TextStyle(

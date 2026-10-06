@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:any_docs/core/constant/url_constant.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
@@ -538,7 +539,7 @@ class HomePageController extends GetxController {
 
       final directory = await getTemporaryDirectory();
 
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final fileName = 'any_docs_${DateTime.now().millisecondsSinceEpoch}.pdf';
 
       final file = File(
         '${directory.path}/$fileName',
@@ -548,7 +549,11 @@ class HomePageController extends GetxController {
 
       Get.back();
 
-      _openPdf(file.path);
+      _showCreatedPdfOptions(
+        file: file,
+        fileName: fileName,
+        bytes: outputBytes,
+      );
     } catch (e, stackTrace) {
       if (Get.isDialogOpen ?? false) {
         Get.back();
@@ -565,6 +570,65 @@ class HomePageController extends GetxController {
     }
   }
 
+  void _showCreatedPdfOptions({
+    required File file,
+    required String fileName,
+    required Uint8List bytes,
+  }) {
+    Get.defaultDialog(
+      title: 'PDF Created',
+      middleText: 'Your PDF is ready. What would you like to do?',
+      barrierDismissible: false,
+      textCancel: 'Open PDF',
+      textConfirm: 'Save PDF',
+      confirmTextColor: Colors.white,
+      onCancel: () {
+        _openPdf(file.path);
+      },
+      onConfirm: () async {
+        Get.back();
+        await _saveCreatedPdf(
+          fileName: fileName,
+          bytes: bytes,
+        );
+        _openPdf(file.path);
+      },
+    );
+  }
+
+  Future<void> _saveCreatedPdf({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    try {
+      final savedPath = await FilePicker.saveFile(
+        dialogTitle: 'Save PDF',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        bytes: bytes,
+      );
+
+      if (savedPath == null) {
+        return;
+      }
+
+      Get.snackbar(
+        'Saved',
+        'PDF saved successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Save Created PDF Error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      Get.snackbar(
+        'Error',
+        'Unable to save PDF.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
   Future<void> saveAndLaunchFile(
     List<int> bytes,
     String fileName,
@@ -747,3 +811,4 @@ class HomePageController extends GetxController {
 
   ///*************************************************************************************************//////////
 }
+
