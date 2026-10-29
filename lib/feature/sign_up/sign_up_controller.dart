@@ -37,10 +37,18 @@ class SignUpController extends GetxController {
 
       shouldResetLoading = false;
       isLoading.value = false;
-      Get.offAllNamed(RouteConstant.LOGIN);
+      await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      shouldResetLoading = false;
+      isLoading.value = false;
+      Get.offAllNamed(RouteConstant.homePage);
+      // Get.offAllNamed(RouteConstant.LOGIN);
       Get.snackbar(
         'Account created',
-        'Please login with your new account.',
+            'login with your new account.',
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(12),
       );
