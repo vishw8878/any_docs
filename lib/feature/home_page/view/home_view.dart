@@ -73,28 +73,18 @@ class HomePageView extends GetView<HomePageController> {
     );
   }
 
-  void _comingSoon() {
-    Get.snackbar(
-      'Coming Soon',
-      'This feature will be improved in a future update.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: appColor,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(12),
-    );
-  }
 
   void _showImagePickerSheet() {
     Get.bottomSheet(
       backgroundColor: Colors.white,
       SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.only(bottom: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _ImageOption(
-                image: 'assets/camera.jpg',
+                image: 'assets/camera.png',
                 title: 'Camera',
                 onTap: () {
                   Get.back();

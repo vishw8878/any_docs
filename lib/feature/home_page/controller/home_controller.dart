@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:any_docs/core/constant/url_constant.dart';
+import 'package:any_docs/core/utils/app_logger.dart';
 import 'package:any_docs/core/utils/loaderScreen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -504,6 +505,7 @@ class HomePageController extends GetxController {
         );
 
         if (image != null) {
+          AppLogger.printLog("ioioioi");
           images.add(image);
         }
       }
