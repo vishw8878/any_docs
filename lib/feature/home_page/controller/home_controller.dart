@@ -584,7 +584,11 @@ class HomePageController extends GetxController {
       textCancel: 'Open PDF',
       textConfirm: 'Save PDF',
       confirmTextColor: Colors.white,
-      onCancel: () {
+      onCancel: () async {
+        await _saveCreatedPdf(
+        fileName: fileName,
+        bytes: bytes,
+        );
         _openPdf(file.path);
       },
       onConfirm: () async {
@@ -631,6 +635,7 @@ class HomePageController extends GetxController {
       );
     }
   }
+
   Future<void> saveAndLaunchFile(
     List<int> bytes,
     String fileName,
